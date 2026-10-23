@@ -1,3 +1,5 @@
+このリポジトリはhackctlの動作確認用です
+
 # test-fuga / HackathonApp
 
 ## 概要
