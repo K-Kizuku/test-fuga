@@ -2,7 +2,11 @@ import SwiftUI
 
 @MainActor
 struct TapCounterCapabilityView: View {
-    @State private var model = TapCounterModel()
+    @State private var model: TapCounterModel
+
+    init(model: TapCounterModel = TapCounterModel()) {
+        _model = State(initialValue: model)
+    }
 
     var body: some View {
         ScrollView {
@@ -31,9 +35,20 @@ struct TapCounterCapabilityView: View {
                     .buttonStyle(.bordered)
                     .controlSize(.large)
                     .accessibilityIdentifier("tap-counter-reset")
+
+                NavigationLink("履歴 (\(model.historyEntries.count))") {
+                    TapCounterHistoryView(entries: model.historyEntries)
+                }
+                .accessibilityIdentifier("tap-counter-history")
             }
             .padding()
             .frame(maxWidth: .infinity)
         }
+    }
+}
+
+#Preview("Mock counter") {
+    NavigationStack {
+        TapCounterCapabilityView(model: TapCounterModel(history: InMemoryTapHistoryStore()))
     }
 }

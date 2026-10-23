@@ -36,7 +36,7 @@ final class TapCounterTests: XCTestCase {
 
     @MainActor
     func testModelTapAndReset() {
-        let model = TapCounterModel()
+        let model = TapCounterModel(history: InMemoryTapHistoryStore())
         XCTAssertEqual(model.count, 0)
 
         for _ in 0..<3 {
@@ -50,7 +50,7 @@ final class TapCounterTests: XCTestCase {
 
     @MainActor
     func testModelUsesInjectedCounter() {
-        let model = TapCounterModel(counter: StubCounter())
+        let model = TapCounterModel(counter: StubCounter(), history: InMemoryTapHistoryStore())
         XCTAssertEqual(model.count, 40)
 
         model.tap()
