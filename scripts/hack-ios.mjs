@@ -1,16 +1,23 @@
 #!/usr/bin/env node
 import { spawn } from "node:child_process";
-import { mkdir, writeFile, readFile, rm } from "node:fs/promises";
+import { mkdir, writeFile, readFile, rm, stat } from "node:fs/promises";
 import { resolve, join } from "node:path";
-import { tmpdir, homedir } from "node:os";
+import { tmpdir, homedir, userInfo } from "node:os";
 import { createWriteStream } from "node:fs";
 import { createHash } from "node:crypto";
 if (process.platform !== "darwin") {
   console.error("macOS + Xcode required. No iOS checks executed.");
   process.exit(1);
 }
-// TAKT command gates pass only PATH/SHELL/TMPDIR; Xcode and CoreSimulator need HOME.
-const env = { ...process.env, HOME: process.env.HOME || homedir() };
+// TAKT command gates pass only PATH/SHELL/TMPDIR; Xcode and CoreSimulator need HOME,
+// and XcodeGen aborts with "Couldn't find current username" without USER.
+const user = userInfo().username;
+const env = {
+  ...process.env,
+  HOME: process.env.HOME || homedir(),
+  USER: process.env.USER || user,
+  LOGNAME: process.env.LOGNAME || user,
+};
 const cwd = process.cwd(),
   logs = resolve(".build-logs"),
   derived = process.env.HACK_DERIVED_DATA
@@ -46,7 +53,13 @@ async function run(cmd, args, name) {
     child.once("error", (e) => {
       clearTimeout(timer);
       log.end();
-      fail(e);
+      fail(
+        e.code === "ENOENT"
+          ? new Error(
+              `${cmd} not found in PATH. Install it (brew install xcodegen / full Xcode) and retry.`,
+            )
+          : e,
+      );
     });
     // "close" waits for stdout to drain; "exit" can fire before the JSON tail arrives.
     child.once("close", (code) => {
@@ -71,18 +84,31 @@ async function acquire() {
       return;
     } catch (e) {
       if (e.code !== "EEXIST") throw e;
+      let pid = NaN;
       try {
-        const pid = Number(await readFile(join(lock, "pid"), "utf8"));
-        try {
-          process.kill(pid, 0);
-        } catch (err) {
-          if (err.code === "ESRCH") {
-            await rm(lock, { recursive: true });
-            continue;
-          }
-        }
+        pid = Number(await readFile(join(lock, "pid"), "utf8"));
       } catch {
         /* creator may be writing its pid */
+      }
+      let stale;
+      if (Number.isSafeInteger(pid) && pid > 0) {
+        try {
+          process.kill(pid, 0);
+          stale = false;
+        } catch (err) {
+          stale = err.code === "ESRCH";
+        }
+      } else {
+        // No readable pid: the creator died before writing it unless the lock is brand new.
+        const age = await stat(lock).then(
+          (s) => Date.now() - s.mtimeMs,
+          () => 0,
+        );
+        stale = age > 30000;
+      }
+      if (stale) {
+        await rm(lock, { recursive: true, force: true });
+        continue;
       }
       if (Date.now() - start > 600000)
         throw new Error("Simulator test lock timeout; inspect " + lock);
@@ -156,6 +182,10 @@ try {
   console.log(
     "XcodeGen, Simulator build and XCTest passed. Physical device checks remain.",
   );
+} catch (e) {
+  // The gate output is read by the fixing agent; a one-line cause beats a stack trace.
+  console.error(`hack-ios failed: ${e.message}`);
+  process.exitCode = 1;
 } finally {
   if (held) await rm(lock, { recursive: true });
 }
