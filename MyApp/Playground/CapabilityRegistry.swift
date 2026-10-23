@@ -23,6 +23,9 @@ enum CapabilityRegistry {
         },
         CapabilityEntry(id: CapabilityID.tapHistory, title: "Tap History", deviceChecks: "No hardware needed (check persistence after relaunch, locale/timezone, Dark Mode, large Dynamic Type)") {
             AnyView(TapHistoryCapabilityView())
+        },
+        CapabilityEntry(id: CapabilityID.deviceOrientation, title: "Device Orientation", deviceChecks: "Physical iPhone required (portrait/landscape/upside down, faceUp/faceDown, rotation lock, stop on close)") {
+            AnyView(DeviceOrientationCapabilityView())
         }
     ]
 }
