@@ -20,6 +20,9 @@ enum CapabilityRegistry {
         },
         CapabilityEntry(id: CapabilityID.haptics, title: "Haptics", deviceChecks: "Physical iPhone required (Impact/Notification/Selection/custom pattern, foreground resume)") {
             AnyView(HapticsCapabilityView())
+        },
+        CapabilityEntry(id: CapabilityID.tapHistory, title: "Tap History", deviceChecks: "No hardware needed (check persistence after relaunch, locale/timezone, Dark Mode, large Dynamic Type)") {
+            AnyView(TapHistoryCapabilityView())
         }
     ]
 }
