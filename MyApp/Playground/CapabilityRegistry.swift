@@ -14,6 +14,9 @@ enum CapabilityRegistry {
     static let entries: [CapabilityEntry] = [
         CapabilityEntry(id: "welcome", title: "Template check", deviceChecks: "No hardware needed") {
             AnyView(WelcomeCapabilityView())
+        },
+        CapabilityEntry(id: "tap-counter", title: "Tap Counter", deviceChecks: "No hardware needed (check rapid taps on device)") {
+            AnyView(TapCounterCapabilityView())
         }
     ]
 }
