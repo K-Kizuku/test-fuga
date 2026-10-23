@@ -17,6 +17,9 @@ enum CapabilityRegistry {
         },
         CapabilityEntry(id: "tap-counter", title: "Tap Counter", deviceChecks: "No hardware needed (check rapid taps on device)") {
             AnyView(TapCounterCapabilityView())
+        },
+        CapabilityEntry(id: CapabilityID.haptics, title: "Haptics", deviceChecks: "Physical iPhone required (Impact/Notification/Selection/custom pattern, foreground resume)") {
+            AnyView(HapticsCapabilityView())
         }
     ]
 }
