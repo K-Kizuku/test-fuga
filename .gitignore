@@ -1,0 +1,10 @@
+
+# hackctl
+.takt/tasks/
+.takt/tasks.yaml
+.takt/runs/
+.takt/worktrees/
+DerivedData/
+.build-logs/
+*.xcodeproj/
+.env

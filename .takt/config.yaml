@@ -1,0 +1,4 @@
+language: ja
+concurrency: 2
+auto_requeue_max_attempts: 0
+ignore_exceed: false

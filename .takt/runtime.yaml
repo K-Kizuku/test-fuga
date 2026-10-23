@@ -1,0 +1,26 @@
+version: 1
+provider:
+  profiles:
+    coder:
+      provider: codex
+      permission_mode: edit
+      model: gpt-6.1-sol
+    reviewer:
+      provider: claude-headless
+      permission_mode: readonly
+      model: opus
+  defaults:
+    profile: coder
+  targets:
+    tags:
+      implementation:
+        profile: coder
+      review:
+        profile: reviewer
+      analysis:
+        profile: reviewer
+    internal_agents:
+      loop-judge:
+        profile: reviewer
+      review-completion-judge:
+        profile: reviewer
